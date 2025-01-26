@@ -7,18 +7,43 @@
 
 import SwiftUI
 
+enum UserRole {
+    case customer
+    case admin
+}
+
+
 struct ContentView: View {
+    let userRole: UserRole
+    
     var body: some View {
-        VStack {
-            Image(systemName: "globe")
-                .imageScale(.large)
-                .foregroundStyle(.tint)
-            Text("Hello, world!")
+        TabView {
+            ClientBookingView()
+                .tabItem {
+                    Label("Bookings", systemImage: "calendar")
+                }
+
+            PaymentView()
+                .tabItem {
+                    Label("Payments", systemImage: "creditcard")
+                }
+
+            if userRole == .admin {
+                AdminDashboardView()
+                    .tabItem {
+                        Label("Admin", systemImage: "gear")
+                    }
+            }
+
+            ProfileView()
+                .tabItem {
+                    Label("Profile", systemImage: "person")
+                }
         }
-        .padding()
     }
 }
 
 #Preview {
-    ContentView()
+    ContentView(userRole: .customer) // Change to .admin for admin view testing)
 }
+

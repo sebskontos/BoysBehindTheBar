@@ -11,7 +11,7 @@ import SwiftUI
 struct BoysBehindTheBarApp: App {
     var body: some Scene {
         WindowGroup {
-            ContentView()
+            ContentView(userRole: .customer) // Change to .admin for admin view testing)
         }
     }
 }
