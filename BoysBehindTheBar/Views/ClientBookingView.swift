@@ -30,6 +30,8 @@ struct ClientBookingView: View {
     let occasions = ["Wedding", "Birthday", "Corporate Event", "Other"]
     let hoursOptions = ["3", "4", "5", "6+"]
     let drinkOptions = ["Cocktails", "Shots", "Standard Drinks", "Other"]
+    
+    @EnvironmentObject var firestoreManager: FirestoreManager
 
     var body: some View {
         NavigationView {
@@ -143,20 +145,17 @@ struct ClientBookingView: View {
     }
 
     func submitBooking() {
-        // Logic to handle booking submission
-        print("Booking submitted:")
-        print("Name: \(firstName) \(lastName)")
-        print("Phone: \(phoneNumber)")
-        print("Email: \(email)")
-        print("Date: \(eventDate)")
-        print("Location: \(location)")
-        print("Occasion: \(occasion)")
-        print("Guests: \(guestCount)")
-        print("Start Time: \(startTime)")
-        print("Number of Hours: \(numberOfHours)")
-        print("Drinks Served: \(drinksServed)")
-        print("Cocktails: \(cocktails)")
-        print("Additional Requests: \(additionalRequests)")
+        let newEvent = Event(
+            clientName: "\(firstName) \(lastName)",
+            eventDate: eventDate,
+            location: location,
+            duration: Int(numberOfHours) ?? 3,
+            status: "pending",
+            adminMessage: nil
+        )
+
+        firestoreManager.addEvent(newEvent)
+        print("Booking submitted: \(newEvent)")
     }
 }
 

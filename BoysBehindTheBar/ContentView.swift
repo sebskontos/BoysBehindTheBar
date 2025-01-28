@@ -29,7 +29,7 @@ struct ContentView: View {
                 }
 
             if userRole == .admin {
-                AdminDashboardView()
+                AdminEventList()
                     .tabItem {
                         Label("Admin", systemImage: "gear")
                     }
@@ -45,5 +45,6 @@ struct ContentView: View {
 
 #Preview {
     ContentView(userRole: .admin) // Change to .admin for admin view testing)
+        .environmentObject(FirestoreManager())
 }
 
