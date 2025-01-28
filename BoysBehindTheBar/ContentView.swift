@@ -44,6 +44,6 @@ struct ContentView: View {
 }
 
 #Preview {
-    ContentView(userRole: .customer) // Change to .admin for admin view testing)
+    ContentView(userRole: .admin) // Change to .admin for admin view testing)
 }
 
