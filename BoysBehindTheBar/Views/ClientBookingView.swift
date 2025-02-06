@@ -30,6 +30,9 @@ struct ClientBookingView: View {
     let occasions = ["Wedding", "Birthday", "Corporate Event", "Other"]
     let hoursOptions = ["3", "4", "5", "6+"]
     let drinkOptions = ["Cocktails", "Shots", "Standard Drinks", "Other"]
+    
+    @State private var isSubmitting = false
+    @State private var isSuccess = false
 
     var body: some View {
         NavigationView {
@@ -136,8 +139,20 @@ struct ClientBookingView: View {
                 }
 
                 Button(action: submitBooking) {
-                    Text("Submit Booking")
-                        .frame(maxWidth: .infinity, alignment: .center)
+                    HStack {
+                        if isSubmitting {
+                            if isSuccess {
+                                Image(systemName: "checkmark.circle.fill")
+                                    .foregroundColor(.green)
+                            } else {
+                                ProgressView()
+                            }
+                        } else {
+                            Text("Submit Booking")
+                                .fontWeight(.bold)
+                        }
+                    }
+                    .frame(maxWidth: .infinity)
                 }
                 .buttonStyle(.borderless)
             }
@@ -157,6 +172,8 @@ struct ClientBookingView: View {
     }
 
     func submitBooking() {
+        isSubmitting = true
+        isSuccess = false
         
         let newEvent = Event(
             clientName: "\(firstName) \(lastName)",
@@ -170,7 +187,18 @@ struct ClientBookingView: View {
         )
 
         print("Booking submitted: \(newEvent)")
-        sendBooking(event: newEvent)
+        
+        DispatchQueue.global(qos: .userInitiated).async {
+            sendBooking(event: newEvent)
+
+            DispatchQueue.main.asyncAfter(deadline: .now() + 2) {
+                isSuccess = true
+                
+                DispatchQueue.main.asyncAfter(deadline: .now() + 1.5) {
+                    isSubmitting = false
+                }
+            }
+        }
     }
     
     func getAPIURL() -> String? {
