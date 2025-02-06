@@ -56,6 +56,8 @@ struct ClientBookingView: View {
                 
                 Section(header: Text("Event Details")) {
                     DatePicker("Event Date", selection: $eventDate, in: Date.now..., displayedComponents: .date)
+                    
+                    DatePicker("Start Time", selection: $startTime, displayedComponents: .hourAndMinute)
 
                     Picker("Occasion", selection: $occasion) {
                         ForEach(occasions, id: \ .self) { occasion in
@@ -65,15 +67,17 @@ struct ClientBookingView: View {
 
                     VStack(alignment: .leading) {
                         TextField("Event Address", text: $location)
-                            .onChange(of: location) {
-                                addressSearchManager.search(query: location) { results in
-                                    addressSuggestions = results
+                            .onChange(of: location){ _, newValue in
+                                if newValue.isEmpty {
+                                    addressSuggestions = []
+                                } else {
+                                    searchForAddresses(query: newValue)
                                 }
                             }
                             .autocapitalization(.none)
 
                         if !addressSuggestions.isEmpty {
-                            List(addressSuggestions, id: \ .title) { suggestion in
+                            List(addressSuggestions, id: \.title) { suggestion in
                                 VStack(alignment: .leading) {
                                     Text(suggestion.title)
                                         .font(.headline)
@@ -82,10 +86,10 @@ struct ClientBookingView: View {
                                 }
                                 .onTapGesture {
                                     location = "\(suggestion.title), \(suggestion.subtitle)"
-                                    addressSuggestions = []
+                                    addressSuggestions = [] // Hide suggestions after selection
                                 }
                             }
-                            .frame(height: 20)
+                            .frame(maxHeight: 200) // Allows dynamic list height
                         }
                     }
 
@@ -96,14 +100,13 @@ struct ClientBookingView: View {
                         }
                 }
 
-                Section(header: Text("Service Timing")) {
-                    DatePicker("Start Time", selection: $startTime, displayedComponents: .hourAndMinute)
-
+                Section(header: Text("How many hours would you like the boys for?")) {
                     Picker("Number of Hours", selection: $numberOfHours) {
                         ForEach(hoursOptions, id: \ .self) { hour in
                             Text(hour)
                         }
                     }
+                    .pickerStyle(.segmented)
                 }
                 
                 Section(header: Text("What Will Be Served At Your Event?")) {
@@ -141,6 +144,16 @@ struct ClientBookingView: View {
             .navigationTitle("Bookings")
         }
         .navigationViewStyle(StackNavigationViewStyle())
+    }
+    
+    private func searchForAddresses(query: String) {
+        DispatchQueue.main.asyncAfter(deadline: .now() + 0.3) { // Debounce effect
+            addressSearchManager.search(query: query) { results in
+                DispatchQueue.main.async {
+                    addressSuggestions = results
+                }
+            }
+        }
     }
 
     func submitBooking() {

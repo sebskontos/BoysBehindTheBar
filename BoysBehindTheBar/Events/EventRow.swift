@@ -21,7 +21,7 @@ struct EventRow: View {
             }
             Spacer()
             VStack {
-                Text(event.eventDate, style: .date)
+                Text(event.eventDate, format: .dateTime.day().month().year())
                 Text(event.eventDate, style: .time)
             }
             .foregroundStyle(.secondary)
@@ -42,3 +42,14 @@ struct EventRow: View {
     }
 }
 
+#Preview {
+    EventRow(event: Event(
+        clientName: "John Doe",
+        eventDate: Date.now,
+        location: "The pub",
+        duration: 3,
+        status: "pending",
+        userPhoneNumber: "0401033232"
+    )
+    )
+}
