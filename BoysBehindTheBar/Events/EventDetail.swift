@@ -20,17 +20,17 @@ struct EventDetail: View {
         VStack(alignment: .leading) {
             // Map View
             Map(position: $mapPosition) {
-                Marker(event.clientName, coordinate: getCoordinates())
+                Marker(event.name, coordinate: getCoordinates())
             }
             .frame(height: 200) // Adjust height as needed
             .cornerRadius(10)
             .padding(.bottom)
             
-            Text("Client: \(event.clientName)")
+            Text("Client: \(event.name)")
                 .font(.headline)
-            Text("Location: \(event.location)")
+            Text("Location: \(event.address)")
                 .font(.subheadline)
-            Text("Date: \(event.eventDate, style: .date)")
+            Text("Date: \(event.date, style: .date)")
             Text("Duration: \(event.duration) hours")
             
             // Admin-Only Response Message Field
@@ -82,7 +82,7 @@ struct EventDetail: View {
     // Geocode the event address into coordinates for the map
     func geocodeEventLocation() {
         let geocoder = CLGeocoder()
-        geocoder.geocodeAddressString(event.location) { placemarks, error in
+        geocoder.geocodeAddressString(event.address) { placemarks, error in
             if let error = error {
                 print("Failed to geocode address: \(error.localizedDescription)")
                 return
@@ -110,12 +110,15 @@ struct EventDetail: View {
 
 
 #Preview {
-    EventDetail(event: Event(
-        clientName: "John Doe",
-        clientEmail: "john.doe@gmail.com", eventDate: Date.now,
-        location: "The pub",
-        duration: "3",
-        status: "pending",
-        userPhoneNumber: "0401033232"
+    EventDetail(event: Event(name: "John Doe",
+             phoneNumber: "0401033232",
+             email: "john.doe@gmail.com",
+             address: "The Pub",
+             date: Date.now,
+             time: Date.now,
+             duration: "3",
+             guests: 100,
+             notes: "N/A",
+             status: "pending"
     ), isAdmin: true)
 }

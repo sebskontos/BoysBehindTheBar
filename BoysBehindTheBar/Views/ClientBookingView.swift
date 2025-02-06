@@ -175,59 +175,6 @@ struct ClientBookingView: View {
         isSubmitting = true
         isSuccess = false
         
-        let newEvent = Event(
-            clientName: "\(firstName) \(lastName)",
-            clientEmail: email,
-            eventDate: eventDate,
-            location: location,
-            duration: numberOfHours,
-            status: "pending",
-            adminMessage: nil,
-            userPhoneNumber: phoneNumber // Store phone number
-        )
-
-        print("Booking submitted: \(newEvent)")
-        
-        DispatchQueue.global(qos: .userInitiated).async {
-            sendBooking(event: newEvent)
-
-            DispatchQueue.main.asyncAfter(deadline: .now() + 2) {
-                isSuccess = true
-                
-                DispatchQueue.main.asyncAfter(deadline: .now() + 1.5) {
-                    isSubmitting = false
-                }
-            }
-        }
-    }
-    
-    func getAPIURL() -> String? {
-        if let path = Bundle.main.path(forResource: "Secrets", ofType: "plist"),
-           let dict = NSDictionary(contentsOfFile: path) as? [String: Any] {
-            return dict["API_URL"] as? String
-        }
-        return nil
-    }
-    
-    func sendBooking(event: Event) {
-        guard let apiURL = getAPIURL(), let url = URL(string: apiURL) else {
-            print("Error: API URL not found")
-            return
-        }
-        
-        var request = URLRequest(url: url)
-        request.httpMethod = "POST"
-        request.setValue("application/json", forHTTPHeaderField: "Content-Type")
-        
-        // Convert Dates to String
-        let dateFormatter = DateFormatter()
-        dateFormatter.dateFormat = "dd/MM/yyyy"
-        let dateString = dateFormatter.string(from: event.eventDate)
-        
-        let timeFormatter = DateFormatter()
-        timeFormatter.dateFormat = "hh:mm a"
-        let timeString = timeFormatter.string(from: startTime)
-        
         // Format Notes Section
         var notesArray: [String] = []
         
@@ -246,29 +193,33 @@ struct ClientBookingView: View {
             notesArray.append("Requests: \(additionalRequests)")
         }
         
-        let bookingData: [String: Any] = [
-            "id": event.id.uuidString,
-            "name": event.clientName,
-            "phoneNumber": "'" + event.userPhoneNumber,
-            "email": event.clientEmail,
-            "address": event.location,
-            "date": dateString,
-            "time": timeString,
-            "duration": event.duration,
-            "guests": guestCount,
-            "notes": notesArray.joined(separator: " | "),
-            "status": event.status
-        ]
+        let newEvent = Event(
+            name: "\(firstName) \(lastName)",
+            phoneNumber: phoneNumber,
+            email: email,
+            address: location,
+            date: eventDate,
+            time: startTime,
+            duration: numberOfHours,
+            guests: Int(guestCount) ?? 0,
+            notes: notesArray.joined(separator: "|"),
+            status: "pending",
+            adminMessage: nil
+        )
+
+        print("Booking submitted: \(newEvent)")
         
-        request.httpBody = try? JSONSerialization.data(withJSONObject: bookingData)
-        
-        URLSession.shared.dataTask(with: request) { data, response, error in
-            if let error = error {
-                print("Error sending booking: \(error)")
-            } else {
-                print("Booking sent successfully!")
+        DispatchQueue.global(qos: .userInitiated).async {
+            EventFetcher().sendBooking(event: newEvent)
+
+            DispatchQueue.main.asyncAfter(deadline: .now() + 2) {
+                isSuccess = true
+                
+                DispatchQueue.main.asyncAfter(deadline: .now() + 1.5) {
+                    isSubmitting = false
+                }
             }
-        }.resume()
+        }
     }
 }
 

@@ -12,7 +12,7 @@ struct BoysBehindTheBarApp: App {
 
     var body: some Scene {
         WindowGroup {
-            ContentView(userRole: .customer)
+            ContentView(userRole: .admin)
         }
     }
 }

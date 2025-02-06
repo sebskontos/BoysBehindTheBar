@@ -26,14 +26,17 @@ struct CustomerEventList: View {
 
 #Preview {
     CustomerEventList(events: [
-            Event(
-                clientName: "John Doe",
-                clientEmail: "john.doe@gmail.com", eventDate: Date.now,
-                location: "The pub",
-                duration: "3",
-                status: "pending",
-                userPhoneNumber: "0401033232"
-            )
+        Event(name: "John Doe",
+              phoneNumber: "0401033232",
+              email: "john.doe@gmail.com",
+              address: "The Pub",
+              date: Date.now,
+              time: Date.now,
+              duration: "3",
+              guests: 100,
+              notes: "N/A",
+              status: "pending"
+        )
         ]
     )
 }

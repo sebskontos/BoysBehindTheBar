@@ -14,15 +14,15 @@ struct EventRow: View {
     var body: some View {
         HStack {
             VStack(alignment: .leading) {
-                Text(event.clientName)
+                Text(event.name)
                     .font(.headline)
-                Text(event.location)
+                Text(event.address)
                     .font(.subheadline)
             }
             Spacer()
             VStack {
-                Text(event.eventDate, format: .dateTime.day().month().year())
-                Text(event.eventDate, style: .time)
+                Text(event.date, format: .dateTime.day().month().year())
+                Text(event.time, style: .time)
             }
             .foregroundStyle(.secondary)
 
@@ -43,13 +43,16 @@ struct EventRow: View {
 }
 
 #Preview {
-    EventRow(event: Event(
-        clientName: "John Doe",
-        clientEmail: "john.doe@gmail.com", eventDate: Date.now,
-        location: "The pub",
-        duration: "3",
-        status: "pending",
-        userPhoneNumber: "0401033232"
+    EventRow(event: Event(name: "John Doe",
+          phoneNumber: "0401033232",
+          email: "john.doe@gmail.com",
+          address: "The Pub",
+          date: Date.now,
+          time: Date.now,
+          duration: "3",
+          guests: 100,
+          notes: "N/A",
+          status: "pending"
     )
     )
 }
