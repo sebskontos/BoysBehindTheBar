@@ -28,9 +28,9 @@ struct CustomerEventList: View {
     CustomerEventList(events: [
             Event(
                 clientName: "John Doe",
-                eventDate: Date.now,
+                clientEmail: "john.doe@gmail.com", eventDate: Date.now,
                 location: "The pub",
-                duration: 3,
+                duration: "3",
                 status: "pending",
                 userPhoneNumber: "0401033232"
             )

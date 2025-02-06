@@ -10,9 +10,10 @@ import Foundation
 struct Event: Codable, Identifiable {
     var id = UUID()
     var clientName: String
+    var clientEmail: String
     var eventDate: Date
     var location: String
-    var duration: Int
+    var duration: String
     var status: String // Example values: "pending", "accepted", "denied"
     var adminMessage: String? // Optional message for admin decisions
     var userPhoneNumber: String // The phone number of the customer

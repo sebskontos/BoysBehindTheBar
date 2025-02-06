@@ -160,15 +160,87 @@ struct ClientBookingView: View {
         
         let newEvent = Event(
             clientName: "\(firstName) \(lastName)",
+            clientEmail: email,
             eventDate: eventDate,
             location: location,
-            duration: Int(numberOfHours) ?? 3,
+            duration: numberOfHours,
             status: "pending",
             adminMessage: nil,
             userPhoneNumber: phoneNumber // Store phone number
         )
 
         print("Booking submitted: \(newEvent)")
+        sendBooking(event: newEvent)
+    }
+    
+    func getAPIURL() -> String? {
+        if let path = Bundle.main.path(forResource: "Secrets", ofType: "plist"),
+           let dict = NSDictionary(contentsOfFile: path) as? [String: Any] {
+            return dict["API_URL"] as? String
+        }
+        return nil
+    }
+    
+    func sendBooking(event: Event) {
+        guard let apiURL = getAPIURL(), let url = URL(string: apiURL) else {
+            print("Error: API URL not found")
+            return
+        }
+        
+        var request = URLRequest(url: url)
+        request.httpMethod = "POST"
+        request.setValue("application/json", forHTTPHeaderField: "Content-Type")
+        
+        // Convert Dates to String
+        let dateFormatter = DateFormatter()
+        dateFormatter.dateFormat = "dd/MM/yyyy"
+        let dateString = dateFormatter.string(from: event.eventDate)
+        
+        let timeFormatter = DateFormatter()
+        timeFormatter.dateFormat = "hh:mm a"
+        let timeString = timeFormatter.string(from: startTime)
+        
+        // Format Notes Section
+        var notesArray: [String] = []
+        
+        // Add drinks served
+        if !drinksServed.isEmpty {
+            notesArray.append("Drinks: \(drinksServed.joined(separator: ", "))")
+        }
+        
+        // Add cocktail types if applicable
+        if drinksServed.contains("Cocktails"), !cocktails.isEmpty {
+            notesArray.append("Cocktails: \(cocktails)")
+        }
+        
+        // Add additional requests if present
+        if !additionalRequests.isEmpty {
+            notesArray.append("Requests: \(additionalRequests)")
+        }
+        
+        let bookingData: [String: Any] = [
+            "id": event.id.uuidString,
+            "name": event.clientName,
+            "phoneNumber": "'" + event.userPhoneNumber,
+            "email": event.clientEmail,
+            "address": event.location,
+            "date": dateString,
+            "time": timeString,
+            "duration": event.duration,
+            "guests": guestCount,
+            "notes": notesArray.joined(separator: " | "),
+            "status": event.status
+        ]
+        
+        request.httpBody = try? JSONSerialization.data(withJSONObject: bookingData)
+        
+        URLSession.shared.dataTask(with: request) { data, response, error in
+            if let error = error {
+                print("Error sending booking: \(error)")
+            } else {
+                print("Booking sent successfully!")
+            }
+        }.resume()
     }
 }
 
