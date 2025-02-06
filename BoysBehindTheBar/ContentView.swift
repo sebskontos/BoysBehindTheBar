@@ -34,17 +34,18 @@ struct ContentView: View {
                         Label("Admin", systemImage: "gear")
                     }
             }
-
-            ProfileView()
-                .tabItem {
-                    Label("Profile", systemImage: "person")
-                }
+            
+            else if userRole == .customer {
+                CustomerEventList()
+                    .tabItem {
+                        Label("My Bookings", systemImage: "person")
+                    }
+            }
         }
     }
 }
 
 #Preview {
     ContentView(userRole: .admin) // Change to .admin for admin view testing)
-        .environmentObject(FirestoreManager())
 }
 

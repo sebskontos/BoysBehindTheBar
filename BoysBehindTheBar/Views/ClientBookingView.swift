@@ -30,8 +30,6 @@ struct ClientBookingView: View {
     let occasions = ["Wedding", "Birthday", "Corporate Event", "Other"]
     let hoursOptions = ["3", "4", "5", "6+"]
     let drinkOptions = ["Cocktails", "Shots", "Standard Drinks", "Other"]
-    
-    @EnvironmentObject var firestoreManager: FirestoreManager
 
     var body: some View {
         NavigationView {
@@ -57,7 +55,7 @@ struct ClientBookingView: View {
                 }
                 
                 Section(header: Text("Event Details")) {
-                    DatePicker("Event Date", selection: $eventDate, displayedComponents: .date)
+                    DatePicker("Event Date", selection: $eventDate, in: Date.now..., displayedComponents: .date)
 
                     Picker("Occasion", selection: $occasion) {
                         ForEach(occasions, id: \ .self) { occasion in
@@ -142,19 +140,21 @@ struct ClientBookingView: View {
             }
             .navigationTitle("Bookings")
         }
+        .navigationViewStyle(StackNavigationViewStyle())
     }
 
     func submitBooking() {
+        
         let newEvent = Event(
             clientName: "\(firstName) \(lastName)",
             eventDate: eventDate,
             location: location,
             duration: Int(numberOfHours) ?? 3,
             status: "pending",
-            adminMessage: nil
+            adminMessage: nil,
+            userPhoneNumber: phoneNumber // Store phone number
         )
 
-        firestoreManager.addEvent(newEvent)
         print("Booking submitted: \(newEvent)")
     }
 }
@@ -191,4 +191,8 @@ class AddressSearchManager: ObservableObject {
             completion(results)
         }
     }
+}
+
+#Preview {
+    ClientBookingView()
 }

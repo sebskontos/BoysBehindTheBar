@@ -8,7 +8,7 @@
 
 import SwiftUI
 
-struct AdminEventRow: View {
+struct EventRow: View {
     var event: Event
 
     var body: some View {
@@ -42,12 +42,3 @@ struct AdminEventRow: View {
     }
 }
 
-#Preview {
-    AdminEventRow(event: Event(
-        clientName: "John Doe",
-        eventDate: Date(),
-        location: "123 Main St",
-        duration: 3,
-        status: "pending"
-    ))
-}

@@ -6,16 +6,16 @@
 //
 
 import Foundation
-import FirebaseFirestore
 
 struct Event: Codable, Identifiable {
-    @DocumentID var id: String? // Firestore auto-generates the document ID
+    var id = UUID()
     var clientName: String
     var eventDate: Date
     var location: String
     var duration: Int
     var status: String // Example values: "pending", "accepted", "denied"
     var adminMessage: String? // Optional message for admin decisions
+    var userPhoneNumber: String // The phone number of the customer
 }
 
 enum EventStatus {
