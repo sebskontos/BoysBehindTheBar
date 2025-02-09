@@ -8,6 +8,8 @@
 import SwiftUI
 import MapKit
 
+let firestoreManager = FirestoreManager()
+
 struct ClientBookingView: View {
     @State private var firstName = ""
     @State private var lastName = ""
@@ -18,7 +20,14 @@ struct ClientBookingView: View {
     @State private var location = ""
     @State private var occasion = "Birthday"
     @State private var guestCount = ""
-    @State private var startTime = Date()
+    
+    @State private var startTime: Date = {
+        var components = Calendar.current.dateComponents([.year, .month, .day], from: Date())
+        components.hour = 18
+        components.minute = 0
+        return Calendar.current.date(from: components) ?? Date()
+    }()
+    
     @State private var numberOfHours = "3"
     @State private var drinksServed: [String] = []
     @State private var cocktails = ""
@@ -210,7 +219,13 @@ struct ClientBookingView: View {
         print("Booking submitted: \(newEvent)")
         
         DispatchQueue.global(qos: .userInitiated).async {
-            EventFetcher().sendBooking(event: newEvent)
+            firestoreManager.addBooking(event: newEvent) { error in
+                if let error = error {
+                    print("❌ Error adding booking: \(error)")
+                } else {
+                    print("✅ Booking added successfully!")
+                }
+            }
 
             DispatchQueue.main.asyncAfter(deadline: .now() + 2) {
                 isSuccess = true

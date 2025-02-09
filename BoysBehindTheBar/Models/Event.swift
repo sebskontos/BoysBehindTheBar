@@ -5,9 +5,12 @@
 //  Created by Sebastian Skontos on 28/1/2025.
 //
 
+
 import Foundation
+import FirebaseFirestore
 
 struct Event: Codable, Identifiable {
+    @DocumentID var firestoreID: String?
     var id = UUID()
     var name: String
     var phoneNumber: String
@@ -65,16 +68,20 @@ struct Event: Codable, Identifiable {
            let parsedDate = Event.parsePlainTextDate(from: dateString) {
             date = parsedDate
         } else {
-            print("❌ Date parsing failed for: \(String(describing: try? container.decode(String.self, forKey: .date)))")
+            print("⚠️ Date parsing failed for: \(String(describing: try? container.decode(String.self, forKey: .date)))")
             date = Date()
         }
 
-        // Fixing Time Parsing (Assumes Plain Text Format "HH:mm")
-        if let timeString = try? container.decode(String.self, forKey: .time),
-           let parsedTime = Event.parsePlainTextTime(from: timeString) {
-            time = parsedTime
+        // Parse `HH:mm` Time Format (Fix Midnight Issue)
+        if let timeString = try? container.decode(String.self, forKey: .time) {
+            if let parsedTime = Event.parseTimeOnly(from: timeString) {
+                time = parsedTime
+            } else {
+                print("⚠️ Time parsing failed for: \(timeString)")
+                time = Date()
+            }
         } else {
-            print("❌ Time parsing failed for: \(String(describing: try? container.decode(String.self, forKey: .time)))")
+            print("⚠️ Time field not found in Firestore")
             time = Date()
         }
     }
@@ -88,20 +95,24 @@ struct Event: Codable, Identifiable {
     }
 
     // Parses "HH:mm" Plain Text Times
-    static func parsePlainTextTime(from string: String) -> Date? {
+    static func parseTimeOnly(from string: String) -> Date? {
         let formatter = DateFormatter()
-        formatter.dateFormat = "HH:mm:ss"
+        formatter.dateFormat = "HH:mm"
         formatter.timeZone = TimeZone.current
+        
         if let fullDate = formatter.date(from: string) {
             let calendar = Calendar.current
-            var components = calendar.dateComponents([.hour, .minute, .second], from: fullDate)
+            var components = calendar.dateComponents([.hour, .minute], from: fullDate)
+            
+            // Force time to have a fixed date (1970-01-01)
             components.year = 1970
             components.month = 1
-            components.day = 1  // Set to a fixed date
-
+            components.day = 1
+            
             let finalTime = calendar.date(from: components)
             return finalTime
         }
+        print("⚠️ Failed to convert time: \(string)")
         return nil
     }
 }

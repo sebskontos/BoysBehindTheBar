@@ -15,6 +15,15 @@ struct EventDetail: View {
     
     @State private var responseMessage: String = ""
     @State private var mapPosition: MapCameraPosition = .automatic
+    
+    @State private var status: String  // Local status update
+    private let firestoreManager = FirestoreManager() // Firestore instance
+    
+    init(event: Event, isAdmin: Bool) {
+        self.event = event
+        self.isAdmin = isAdmin
+        _status = State(initialValue: event.status) // Initialize state from event
+    }
 
     var body: some View {
         VStack(alignment: .leading) {
@@ -46,7 +55,7 @@ struct EventDetail: View {
             // Admin-Only Buttons
             if isAdmin {
                 HStack {
-                    Button(action: { }) {
+                    Button(action: { updateStatus(newStatus: "accepted") }) {
                         Text("Accept")
                             .frame(maxWidth: .infinity)
                             .padding()
@@ -55,7 +64,7 @@ struct EventDetail: View {
                             .cornerRadius(10)
                     }
 
-                    Button(action: { }) {
+                    Button(action: { updateStatus(newStatus: "denied") }) {
                         Text("Deny")
                             .frame(maxWidth: .infinity)
                             .padding()
@@ -101,6 +110,18 @@ struct EventDetail: View {
                         center: newCoordinate,
                         span: MKCoordinateSpan(latitudeDelta: 0.02, longitudeDelta: 0.02)
                     ))
+                }
+            }
+        }
+    }
+    
+    func updateStatus(newStatus: String) {
+        firestoreManager.updateBookingStatus(event: event, newStatus: newStatus, responseMessage: responseMessage) { error in
+            if let error = error {
+                print("❌ Error updating status: \(error.localizedDescription)")
+            } else {
+                DispatchQueue.main.async {
+                    status = newStatus
                 }
             }
         }

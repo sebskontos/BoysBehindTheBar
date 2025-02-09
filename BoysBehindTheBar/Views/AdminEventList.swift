@@ -10,7 +10,6 @@ import SwiftUI
 
 struct AdminEventList: View {
     @StateObject private var eventFetcher = EventFetcher()
-    var events: [Event] = []
 
     var body: some View {
         NavigationView {
@@ -20,26 +19,9 @@ struct AdminEventList: View {
                 }
             }
             .navigationTitle("Bookings")
-            .refreshable {   // Pull-to-refresh feature
+            .onAppear {
                 eventFetcher.fetchEvents()
             }
         }
     }
-}
-
-#Preview {
-    AdminEventList(events: [
-        Event(name: "John Doe",
-              phoneNumber: "0401033232",
-              email: "john.doe@gmail.com",
-              address: "The Pub",
-              date: Date.now,
-              time: Date.now,
-              duration: "3",
-              guests: 100,
-              notes: "N/A",
-              status: "pending"
-        ),
-    ]
-    )
 }
