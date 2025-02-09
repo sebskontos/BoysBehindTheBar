@@ -5,14 +5,19 @@
 //  Created by Sebastian Skontos on 9/2/2025.
 //
 
-
+import FirebaseAuth
 import FirebaseFirestore
 
 class FirestoreManager {
     private let db = Firestore.firestore()
 
     func addBooking(event: Event, completion: @escaping (Error?) -> Void) {
-        let bookingRef = db.collection("bookings").document(event.id.uuidString)
+        guard let userID = Auth.auth().currentUser?.uid else {
+            print("❌ Error: No authenticated user.")
+            return
+        }
+        
+        let bookingRef = db.collection("bookings").document()
         
         // Convert Dates to String
         let dateFormatter = DateFormatter()
@@ -23,7 +28,9 @@ class FirestoreManager {
         timeFormatter.dateFormat = "HH:mm"
         let timeString = timeFormatter.string(from: event.time)
 
-        bookingRef.setData([
+        let bookingData: [String: Any] = [
+            "id": bookingRef.documentID,
+            "userID": userID,
             "name": event.name,
             "email": event.email,
             "phoneNumber": event.phoneNumber,
@@ -34,9 +41,12 @@ class FirestoreManager {
             "guests": event.guests,
             "status": event.status,
             "notes": event.notes
-        ]) { error in
+        ]
+        
+        bookingRef.setData(bookingData) { error in
             completion(error)
         }
+        
     }
     
     func updateBookingStatus(event: Event, newStatus: String, responseMessage: String?, completion: @escaping (Error?) -> Void) {

@@ -7,45 +7,45 @@
 
 import SwiftUI
 
-enum UserRole {
-    case customer
-    case admin
-}
-
 
 struct ContentView: View {
-    let userRole: UserRole
+    @StateObject private var authManager = AuthManager()
     
     var body: some View {
-        TabView {
-            ClientBookingView()
-                .tabItem {
-                    Label("Bookings", systemImage: "calendar")
+        if authManager.userRole == .unknown {
+            Text("Authenticating...")
+                .onAppear {
+                    authManager.checkAuthStatus()
                 }
-
-            PaymentView()
-                .tabItem {
-                    Label("Payments", systemImage: "creditcard")
+        } else {
+            TabView {
+                ClientBookingView()
+                    .tabItem {
+                        Label("Bookings", systemImage: "calendar")
+                    }
+                
+                PaymentView()
+                    .tabItem {
+                        Label("Payments", systemImage: "creditcard")
+                    }
+                
+                if authManager.userRole == .admin {
+                    AdminEventList()
+                        .tabItem {
+                            Label("Admin", systemImage: "gear")
+                        }
+                } else {
+                    CustomerEventList()
+                        .tabItem {
+                            Label("My Bookings", systemImage: "person")
+                        }
                 }
-
-            if userRole == .admin {
-                AdminEventList()
-                    .tabItem {
-                        Label("Admin", systemImage: "gear")
-                    }
-            }
-            
-            else if userRole == .customer {
-                CustomerEventList()
-                    .tabItem {
-                        Label("My Bookings", systemImage: "person")
-                    }
             }
         }
     }
 }
 
 #Preview {
-    ContentView(userRole: .admin) // Change to .admin for admin view testing)
+    ContentView()
 }
 

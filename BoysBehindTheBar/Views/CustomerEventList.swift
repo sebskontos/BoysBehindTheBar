@@ -10,33 +10,29 @@ import SwiftUI
 
 struct CustomerEventList: View {
     
-    var events: [Event] = []
-
+    @StateObject private var eventFetcher = EventFetcher()
+    @StateObject private var authManager = AuthManager()
+    
     var body: some View {
         NavigationView {
-            List(events) { event in
-                NavigationLink(destination: EventDetail(event: event, isAdmin: false)) {
-                    EventRow(event: event) // Reuse same row design
+            VStack {
+                if let userID = authManager.userID {
+                    List(eventFetcher.events) { event in
+                        NavigationLink(destination: EventDetail(event: event, isAdmin: false)) {
+                            EventRow(event: event)
+                        }
+                    }
+                    .navigationTitle("My Bookings")
+                    .onAppear {
+                        eventFetcher.fetchEventsForUser(userID: userID)  // ✅ Fetch user-specific bookings
+                    }
+                } else {
+                    Text("Authenticating...")
+                        .onAppear {
+                            authManager.checkAuthStatus()
+                        }
                 }
             }
-            .navigationTitle("My Bookings")
         }
     }
-}
-
-#Preview {
-    CustomerEventList(events: [
-        Event(name: "John Doe",
-              phoneNumber: "0401033232",
-              email: "john.doe@gmail.com",
-              address: "The Pub",
-              date: Date.now,
-              time: Date.now,
-              duration: "3",
-              guests: 100,
-              notes: "N/A",
-              status: "pending"
-        )
-        ]
-    )
 }

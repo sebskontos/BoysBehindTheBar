@@ -12,8 +12,14 @@ class EventFetcher: ObservableObject {
     @Published var events: [Event] = []
     private let db = Firestore.firestore()
 
-    func fetchEvents() {
-        db.collection("bookings").addSnapshotListener { snapshot, error in
+    func fetchEvents(status: String?) {
+        var query: Query = db.collection("bookings")
+
+        if let status = status {
+            query = query.whereField("status", isEqualTo: status)
+        }
+
+        query.addSnapshotListener { snapshot, error in
             guard let documents = snapshot?.documents else {
                 print("❌ Error fetching events: \(String(describing: error))")
                 return
@@ -22,7 +28,7 @@ class EventFetcher: ObservableObject {
             self.events = documents.compactMap { doc in
                 do {
                     var event = try doc.data(as: Event.self)
-                    event.firestoreID = doc.documentID
+                    event.firestoreID = doc.documentID  // Store Firestore ID
                     return event
                 } catch {
                     print("❌ Error decoding event: \(error)")
@@ -30,6 +36,28 @@ class EventFetcher: ObservableObject {
                 }
             }
         }
+    }
+    
+    func fetchEventsForUser(userID: String) {
+        db.collection("bookings")
+            .whereField("userID", isEqualTo: userID)  // ✅ Fetch only user’s bookings
+            .addSnapshotListener { snapshot, error in
+                guard let documents = snapshot?.documents else {
+                    print("❌ Error fetching user bookings: \(String(describing: error))")
+                    return
+                }
+
+                self.events = documents.compactMap { doc in
+                    do {
+                        var event = try doc.data(as: Event.self)
+                        event.firestoreID = doc.documentID
+                        return event
+                    } catch {
+                        print("❌ Error decoding event: \(error)")
+                        return nil
+                    }
+                }
+            }
     }
 }
 
