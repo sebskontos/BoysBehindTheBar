@@ -86,6 +86,7 @@ class AuthManager: ObservableObject {
                     DispatchQueue.main.async {
                         self.userRole = (role == "admin") ? .admin : .customer
                     }
+                    self.isLoading = false
                 } else {
                     print("❌ Role field missing in Firestore for user ID: \(userID)")
                 }

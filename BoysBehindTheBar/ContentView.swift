@@ -12,12 +12,7 @@ struct ContentView: View {
     @StateObject private var authManager = AuthManager()
     
     var body: some View {
-        if authManager.isLoading {
-            ProgressView("Loading...")
-                .font(.headline)
-                .frame(maxWidth: .infinity, maxHeight: .infinity)
-            
-        } else {
+        if !authManager.isLoading {
             TabView {
                 ClientBookingView()
                     .tabItem {
