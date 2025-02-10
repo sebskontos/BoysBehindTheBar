@@ -38,5 +38,6 @@ struct AdminEventList: View {
                 }
             }
         }
+        .navigationViewStyle(StackNavigationViewStyle())
     }
 }

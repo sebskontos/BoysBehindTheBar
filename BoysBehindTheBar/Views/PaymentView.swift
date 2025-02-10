@@ -13,5 +13,6 @@ struct PaymentView: View {
             Text("Payment Integration Coming Soon")
                 .navigationTitle("Payments")
         }
+        .navigationViewStyle(StackNavigationViewStyle())
     }
 }
