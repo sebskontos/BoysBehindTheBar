@@ -19,7 +19,6 @@ class FirestoreManager {
         
         let bookingRef = db.collection("bookings").document()
         
-        // Convert Dates to String
         let dateFormatter = DateFormatter()
         dateFormatter.dateFormat = "dd/MM/yyyy"
         let dateString = dateFormatter.string(from: event.date)
@@ -45,10 +44,11 @@ class FirestoreManager {
         
         DispatchQueue.global(qos: .background).async {
             bookingRef.setData(bookingData) { error in
-                completion(error)
+                DispatchQueue.main.async {
+                    completion(error)
+                }
             }
         }
-        
     }
     
     func updateBookingStatus(event: Event, newStatus: String, responseMessage: String?, completion: @escaping (Error?) -> Void) {
@@ -66,9 +66,10 @@ class FirestoreManager {
 
         DispatchQueue.global(qos: .background).async {
             bookingRef.updateData(updateData) { error in
-                completion(error)
+                DispatchQueue.main.async {
+                    completion(error)
+                }
             }
         }
     }
-    
 }

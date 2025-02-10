@@ -185,7 +185,7 @@ struct ClientBookingView: View {
                 }
                 .buttonStyle(.borderless)
             }
-            .navigationTitle("Bookings")
+            .navigationTitle("New Booking")
             .addDoneButton()
         }
         .navigationViewStyle(StackNavigationViewStyle())

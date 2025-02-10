@@ -17,9 +17,10 @@ enum UserRole {
 class AuthManager: ObservableObject {
     @Published var userID: String?
     @Published var userRole: UserRole = .unknown
+    @Published var isLoading = true
     
     private let db = Firestore.firestore()
-
+    
     init() {
         checkAuthStatus()  // Auto-login on app launch
     }

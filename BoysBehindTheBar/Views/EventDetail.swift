@@ -31,14 +31,12 @@ struct EventDetail: View {
 
             // Booking Details Card
             VStack(alignment: .leading, spacing: 12) {
-                Text("Booking Details")
+                Text(event.name)
                     .font(.title2.bold())
-
-                HStack {
-                    Text(event.name)
-                        .font(.headline)
-
-                    if isAdmin {
+                
+                if isAdmin {
+                    VStack(alignment: .leading, spacing: 12) {
+                        
                         Link(destination: URL(string: "tel:\(event.phoneNumber)")!) {
                             HStack {
                                 Image(systemName: "phone.fill")
@@ -46,16 +44,24 @@ struct EventDetail: View {
                             }
                             .foregroundColor(.blue)
                         }
+                        
+                        if let encodedAddress = event.address.addingPercentEncoding(withAllowedCharacters: .urlQueryAllowed),
+                           let mapsURL = URL(string: "http://maps.apple.com/?q=\(encodedAddress)") {
+                            Link(destination: mapsURL) {
+                                HStack {
+                                    Image(systemName: "mappin.and.ellipse")
+                                        .foregroundColor(.blue)
+                                    Text(event.address)
+                                }
+                                .foregroundColor(.blue)
+                            }
+                        }
                     }
                 }
 
                 Divider()
-
+                
                 Text("\(event.date, style: .date) at \(event.time, style: .time) • \(event.duration) hours")
-                    .font(.subheadline)
-                    .foregroundColor(.secondary)
-
-                Text(event.address)
                     .font(.subheadline)
                     .foregroundColor(.secondary)
 
@@ -117,7 +123,7 @@ struct EventDetail: View {
     EventDetail(event: Event(name: "John Doe",
              phoneNumber: "0401033232",
              email: "john.doe@gmail.com",
-             address: "The Pub",
+             address: "14 Irene Street, Abbotsford, NSW, 2046",
              date: Date.now,
              time: Date.now,
              duration: "3",

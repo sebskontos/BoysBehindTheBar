@@ -11,7 +11,6 @@ import SwiftUI
 struct AdminEventList: View {
     @StateObject private var eventFetcher = EventFetcher()
     @State private var selectedStatus: String? = nil
-    let statuses: [String?] = [nil, "pending", "accepted", "denied"]
 
     var body: some View {
         NavigationView {
