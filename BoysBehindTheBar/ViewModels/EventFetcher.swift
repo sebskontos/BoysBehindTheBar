@@ -19,38 +19,17 @@ class EventFetcher: ObservableObject {
             query = query.whereField("status", isEqualTo: status)
         }
 
-        query.addSnapshotListener { snapshot, error in
-            guard let documents = snapshot?.documents else {
-                print("❌ Error fetching events: \(String(describing: error))")
-                return
-            }
-
-            self.events = documents.compactMap { doc in
-                do {
-                    var event = try doc.data(as: Event.self)
-                    event.firestoreID = doc.documentID  // Store Firestore ID
-                    return event
-                } catch {
-                    print("❌ Error decoding event: \(error)")
-                    return nil
-                }
-            }
-        }
-    }
-    
-    func fetchEventsForUser(userID: String) {
-        db.collection("bookings")
-            .whereField("userID", isEqualTo: userID)  // ✅ Fetch only user’s bookings
-            .addSnapshotListener { snapshot, error in
+        DispatchQueue.global(qos: .background).async {
+            query.addSnapshotListener { snapshot, error in
                 guard let documents = snapshot?.documents else {
-                    print("❌ Error fetching user bookings: \(String(describing: error))")
+                    print("❌ Error fetching events: \(String(describing: error))")
                     return
                 }
-
+                
                 self.events = documents.compactMap { doc in
                     do {
                         var event = try doc.data(as: Event.self)
-                        event.firestoreID = doc.documentID
+                        event.firestoreID = doc.documentID  // Store Firestore ID
                         return event
                     } catch {
                         print("❌ Error decoding event: \(error)")
@@ -58,6 +37,31 @@ class EventFetcher: ObservableObject {
                     }
                 }
             }
+        }
+    }
+    
+    func fetchEventsForUser(userID: String) {
+        DispatchQueue.global(qos: .background).async {
+            self.db.collection("bookings")
+                .whereField("userID", isEqualTo: userID)  // ✅ Fetch only user’s bookings
+                .addSnapshotListener { snapshot, error in
+                    guard let documents = snapshot?.documents else {
+                        print("❌ Error fetching user bookings: \(String(describing: error))")
+                        return
+                    }
+                    
+                    self.events = documents.compactMap { doc in
+                        do {
+                            var event = try doc.data(as: Event.self)
+                            event.firestoreID = doc.documentID
+                            return event
+                        } catch {
+                            print("❌ Error decoding event: \(error)")
+                            return nil
+                        }
+                    }
+                }
+        }
     }
 }
 

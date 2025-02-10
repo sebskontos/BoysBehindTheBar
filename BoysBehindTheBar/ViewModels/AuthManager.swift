@@ -34,12 +34,14 @@ class AuthManager: ObservableObject {
     }
 
     func signInAnonymously() {
-        Auth.auth().signInAnonymously { authResult, error in
-            if let error = error {
-                print("❌ Authentication failed: \(error.localizedDescription)")
-            } else if let user = authResult?.user {
-                self.userID = user.uid
-                self.checkIfUserExistsOrCreate(userID: user.uid)  // ✅ Ensure user has a role
+        DispatchQueue.global(qos: .background).async {
+            Auth.auth().signInAnonymously { authResult, error in
+                if let error = error {
+                    print("❌ Authentication failed: \(error.localizedDescription)")
+                } else if let user = authResult?.user {
+                    self.userID = user.uid
+                    self.checkIfUserExistsOrCreate(userID: user.uid)  // ✅ Ensure user has a role
+                }
             }
         }
     }
@@ -47,15 +49,17 @@ class AuthManager: ObservableObject {
     private func checkIfUserExistsOrCreate(userID: String) {
         let userRef = db.collection("users").document(userID)
         
-        userRef.getDocument { document, error in
-            if let document = document, document.exists {
-                self.fetchUserRole(userID: userID)  // ✅ Fetch existing role
-            } else {
-                userRef.setData(["userID": userID, "role": "customer"]) { error in
-                    if let error = error {
-                        print("❌ Error creating user: \(error.localizedDescription)")
-                    } else {
-                        self.userRole = .customer  // ✅ Default role is "customer"
+        DispatchQueue.global(qos: .background).async {
+            userRef.getDocument { document, error in
+                if let document = document, document.exists {
+                    self.fetchUserRole(userID: userID)  // ✅ Fetch existing role
+                } else {
+                    userRef.setData(["userID": userID, "role": "customer"]) { error in
+                        if let error = error {
+                            print("❌ Error creating user: \(error.localizedDescription)")
+                        } else {
+                            self.userRole = .customer  // ✅ Default role is "customer"
+                        }
                     }
                 }
             }
@@ -65,23 +69,25 @@ class AuthManager: ObservableObject {
     private func fetchUserRole(userID: String) {
         let userRef = db.collection("users").document(userID)
 
-        userRef.getDocument { document, error in
-            if let error = error {
-                print("❌ Error fetching user role: \(error.localizedDescription)")
-                return
-            }
-
-            guard let document = document, document.exists else {
-                print("❌ No user role found for user ID: \(userID)")
-                return
-            }
-
-            if let role = document.get("role") as? String {
-                DispatchQueue.main.async {
-                    self.userRole = (role == "admin") ? .admin : .customer
+        DispatchQueue.global(qos: .background).async {
+            userRef.getDocument { document, error in
+                if let error = error {
+                    print("❌ Error fetching user role: \(error.localizedDescription)")
+                    return
                 }
-            } else {
-                print("❌ Role field missing in Firestore for user ID: \(userID)")
+                
+                guard let document = document, document.exists else {
+                    print("❌ No user role found for user ID: \(userID)")
+                    return
+                }
+                
+                if let role = document.get("role") as? String {
+                    DispatchQueue.main.async {
+                        self.userRole = (role == "admin") ? .admin : .customer
+                    }
+                } else {
+                    print("❌ Role field missing in Firestore for user ID: \(userID)")
+                }
             }
         }
     }

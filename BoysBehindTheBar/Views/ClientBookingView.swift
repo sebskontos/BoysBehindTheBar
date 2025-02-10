@@ -8,6 +8,25 @@
 import SwiftUI
 import MapKit
 
+
+extension View {
+    func addDoneButton() -> some View {
+        self.toolbar {
+            ToolbarItemGroup(placement: .keyboard) {
+                Spacer()
+                Button("Done") {
+                    hideKeyboard()
+                }
+            }
+        }
+    }
+
+    func hideKeyboard() {
+        UIApplication.shared.sendAction(#selector(UIResponder.resignFirstResponder), to: nil, from: nil, for: nil)
+    }
+}
+
+
 let firestoreManager = FirestoreManager()
 
 struct ClientBookingView: View {
@@ -51,6 +70,7 @@ struct ClientBookingView: View {
                         TextField("First Name", text: $firstName)
                             .textContentType(.givenName)
                             .autocapitalization(.words)
+                        
                         TextField("Last Name", text: $lastName)
                             .textContentType(.familyName)
                             .autocapitalization(.words)
@@ -166,6 +186,7 @@ struct ClientBookingView: View {
                 .buttonStyle(.borderless)
             }
             .navigationTitle("Bookings")
+            .addDoneButton()
         }
         .navigationViewStyle(StackNavigationViewStyle())
     }

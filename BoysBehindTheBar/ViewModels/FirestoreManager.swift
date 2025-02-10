@@ -43,8 +43,10 @@ class FirestoreManager {
             "notes": event.notes
         ]
         
-        bookingRef.setData(bookingData) { error in
-            completion(error)
+        DispatchQueue.global(qos: .background).async {
+            bookingRef.setData(bookingData) { error in
+                completion(error)
+            }
         }
         
     }
@@ -62,8 +64,10 @@ class FirestoreManager {
             updateData["adminMessage"] = message
         }
 
-        bookingRef.updateData(updateData) { error in
-            completion(error)
+        DispatchQueue.global(qos: .background).async {
+            bookingRef.updateData(updateData) { error in
+                completion(error)
+            }
         }
     }
     
