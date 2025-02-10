@@ -14,8 +14,6 @@ struct EventDetail: View {
     var isAdmin: Bool // Determines if the user is an admin
     
     @State private var responseMessage: String = ""
-    @State private var mapPosition: MapCameraPosition = .automatic
-    
     @State private var status: String  // Local status update
     private let firestoreManager = FirestoreManager() // Firestore instance
     
@@ -26,42 +24,62 @@ struct EventDetail: View {
     }
 
     var body: some View {
-        VStack(alignment: .leading) {
+        VStack(spacing: 0) {
             // Map View
-            Map(position: $mapPosition) {
-                Marker(event.name, coordinate: getCoordinates())
-            }
-            .frame(height: 200) // Adjust height as needed
-            .cornerRadius(10)
-            .padding(.bottom)
-            
-            Text("Client: \(event.name)")
-                .font(.headline)
-            Text("Location: \(event.address)")
-                .font(.subheadline)
-            Text("Date: \(event.date, style: .date)")
-            Text("Duration: \(event.duration) hours")
-            
-            // Admin-Only Response Message Field
-            if isAdmin {
-                Text("Response Message:")
-                    .font(.headline)
-                    .padding(.top)
-                TextEditor(text: $responseMessage)
-                    .frame(height: 100)
-                    .border(Color.gray)
-            }
+            MapView(event: event)
+                .padding(.bottom, 8)
 
-            // Admin-Only Buttons
-            if isAdmin {
+            // Booking Details Card
+            VStack(alignment: .leading, spacing: 12) {
+                Text("Booking Details")
+                    .font(.title2.bold())
+
                 HStack {
+                    Text(event.name)
+                        .font(.headline)
+
+                    if isAdmin {
+                        Link(destination: URL(string: "tel:\(event.phoneNumber)")!) {
+                            HStack {
+                                Image(systemName: "phone.fill")
+                                Text(event.phoneNumber)
+                            }
+                            .foregroundColor(.blue)
+                        }
+                    }
+                }
+
+                Divider()
+
+                Text("\(event.date, style: .date) at \(event.time, style: .time) • \(event.duration) hours")
+                    .font(.subheadline)
+                    .foregroundColor(.secondary)
+
+                Text(event.address)
+                    .font(.subheadline)
+                    .foregroundColor(.secondary)
+
+                Text("\(event.guests) guests")
+                    .font(.subheadline)
+                    .foregroundColor(.secondary)
+            }
+            .padding()
+            .background(RoundedRectangle(cornerRadius: 12).fill(Color(.secondarySystemBackground)))
+            .shadow(radius: 10)
+            .padding(.horizontal)
+
+            Spacer()
+
+            // Accept & Deny Buttons (Admin Only)
+            if isAdmin {
+                HStack(spacing: 12) {
                     Button(action: { updateStatus(newStatus: "accepted") }) {
                         Text("Accept")
                             .frame(maxWidth: .infinity)
                             .padding()
                             .background(Color.green)
                             .foregroundColor(.white)
-                            .cornerRadius(10)
+                            .cornerRadius(8)
                     }
 
                     Button(action: { updateStatus(newStatus: "denied") }) {
@@ -70,49 +88,14 @@ struct EventDetail: View {
                             .padding()
                             .background(Color.red)
                             .foregroundColor(.white)
-                            .cornerRadius(10)
+                            .cornerRadius(8)
                     }
                 }
-                .padding(.top)
+                .padding(.horizontal)
+                .padding(.bottom)
             }
         }
-        .padding()
         .navigationTitle("Event Details")
-        .onAppear {
-                geocodeEventLocation()
-            }
-    }
-    
-    // Function to get default coordinates (prevents nil errors)
-    func getCoordinates() -> CLLocationCoordinate2D {
-        return CLLocationCoordinate2D(latitude: 0, longitude: 0) // Default placeholder, updated after geocoding
-    }
-    
-    // Geocode the event address into coordinates for the map
-    func geocodeEventLocation() {
-        let geocoder = CLGeocoder()
-        geocoder.geocodeAddressString(event.address) { placemarks, error in
-            if let error = error {
-                print("Failed to geocode address: \(error.localizedDescription)")
-                return
-            }
-
-            if let placemark = placemarks?.first,
-               let location = placemark.location {
-                let newCoordinate = CLLocationCoordinate2D(
-                    latitude: location.coordinate.latitude,
-                    longitude: location.coordinate.longitude
-                )
-                
-                // Update map position
-                DispatchQueue.main.async {
-                    mapPosition = .region(MKCoordinateRegion(
-                        center: newCoordinate,
-                        span: MKCoordinateSpan(latitudeDelta: 0.02, longitudeDelta: 0.02)
-                    ))
-                }
-            }
-        }
     }
     
     func updateStatus(newStatus: String) {
